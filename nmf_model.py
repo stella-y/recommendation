@@ -2,10 +2,12 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras import Model
+from tensorflow.keras import regularizers
+
 import os
 
-class NMFModel(Model):
-    def get_gmf_model(num_factors=16):
+class NMFModel(object):
+    def get_gmf_model(self, num_factors=16):
         # input layer
         user_input_layer=layers.Input(shape=(1,), dtype='int32', name='user_input')
         item_input_layer=layers.Input(shape=(1,), dtype='int32', name='item_input')
@@ -37,10 +39,38 @@ class NMFModel(Model):
         
         return self.gmf_model
     
+    def get_mlp_model(self, layer1_dim, num_layers):
+        # input layer
+        user_input_layer=layers.Input(shape=(1,), dtype='int32', name='user_input')
+        item_input_layer=layers.Input(shape=(1,), dtype='int32', name='item_input')
+
+        # embedding layer
+        user_embedding_layer=layers.Embedding(input_dim=self.num_users, 
+                               output_dim=num_factors, 
+                               embeddings_regularizer=regularizers.l2(0.),
+                               name='user_embedding'
+                              )(user_input_layer)
+        item_embedding_layer=layers.Embedding(input_dim=self.num_items, 
+                               output_dim=num_factors, 
+                               embeddings_regularizer=regularizers.l2(0.),
+                               name='item_embedding'
+                              )(item_input_layer)
+        
+        # flatten embedding vector
+        user_latent=layers.Flatten()(user_embedding_layer)
+        item_latent=layers.Flatten()(item_embedding_layer)
+        
+        # concat
+        x=layers.concatenate([user_latent, item_latent])
+        for i in range(self.num_layers-1):
+            x=Dense((int)(layer1_dim/(2**i)), activation='tanh', name='layer%s' %str(i+1))(x)
+            x=BatchNormalization()(x)
+        prediction=Dense(1, activation='tanh', name='prediction')(x)
+        self.mlp_model=Model(input=[user_input_layer, item_input_layer], output='prediction')(x)
+        
+        return mlp_model
     
-        
-        
-    def fit_model(self, n_batch_size=256, n_epochs=5, model, checkpoint_path):
+    def fit_model(self, model, checkpoint_path, n_batch_size=256, n_epochs=5):
         model.compile(loss='mae', optimiser='adam', metrics=['mae', 'mse'])
         
         cp_callback=tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
