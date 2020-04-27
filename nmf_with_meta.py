@@ -62,7 +62,7 @@ class NMFWithMeta(NMFModel):
         genre_input_layer=layers.Input(shape=(None,), dtype='int32', name='genre_input')
 
         user_embedding_layer=layers.Embedding(input_dim=self.num_users, 
-                               output_dim=num_factors, 
+                               output_dim=self.num_factors, 
                                embeddings_regularizer=regularizers.l2(0.),
                                name='user_embedding'
                               )(user_input_layer)
@@ -95,15 +95,15 @@ class NMFWithMeta(NMFModel):
             x=layers.Dense((int)(self.layer1_dim/(2**i)), activation='tanh', name='layer%s' %str(i+1))(x)
             x=layers.BatchNormalization()(x)
         prediction=layers.Dense(1, activation='tanh', name='prediction')(x)
-        self.mlp_model=Model([user_input_layer, item_input_layer], prediction)
+        self.mlp_model=Model([user_input_layer, item_input_layer, genre_input_layer], prediction)
         
         return self.mlp_model
     
     def get_nmf_model(self):
-        
+        self.num_layers=3
         num_factors=self.num_factors
-        layer1_dim=self.layer1_dim
         num_layers=self.num_layers
+        layer1_dim=self.num_factors*(2**(num_layers-1))
         
         num_users=self.num_users
         num_items=self.num_items
@@ -133,7 +133,7 @@ class NMFWithMeta(NMFModel):
                                name='GMF_genre_embedding'
                               )(genre_input_layer)
         
-        GMF_genre_emb_mean=tf.reduce_mean(genre_embedding_layer, 0)
+        GMF_genre_emb_mean=tf.reduce_mean(GMF_genre_embedding, 0)
         
         # MLP embedding layer
         MLP_user_embedding=layers.Embedding(input_dim=num_users, 
@@ -153,7 +153,7 @@ class NMFWithMeta(NMFModel):
                                embeddings_regularizer=regularizers.l2(0.),
                                name='MLP_genre_embedding'
                               )(genre_input_layer)
-        MLP_genre_emb_mean=tf.reduce_mean(genre_embedding_layer, 0)
+        MLP_genre_emb_mean=tf.reduce_mean(MLP_genre_embedding, 0)
 
         # GMF
         GMF_user_latent=layers.Flatten()(GMF_user_embedding)
@@ -186,7 +186,7 @@ class NMFWithMeta(NMFModel):
         NeuMF_vector=layers.concatenate([GMF_vector, MLP_vector])
         prediction=layers.Dense(1, activation='tanh', name='prediction')(NeuMF_vector)
         
-        model=Model([user_input_layer, item_input_layer], prediction)
+        model=Model([user_input_layer, item_input_layer, genre_input_layer], prediction)
         
         self.nmf_model=model
         self.nmf_model=self.set_nmf_weight()
