@@ -33,9 +33,6 @@ class NMFModel(object):
         # element wise product
         ew_product=layers.multiply([user_latent, item_latent])
         ew_product=layers.BatchNormalization()(ew_product)
-
-        # 잘못만든듯 지워도 될 듯
-        #dense=layers.Dense(128, activation='tanh')(ew_product)
         
         prediction=layers.Dense(1, activation='tanh', name='prediction')(ew_product)
 
