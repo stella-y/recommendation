@@ -100,7 +100,7 @@ class NMFWithMeta(NMFModel):
         return self.mlp_model
     
     def get_nmf_model(self):
-        self.num_layers=3
+
         num_factors=self.num_factors
         num_layers=self.num_layers
         layer1_dim=self.num_factors*(2**(num_layers-1))
@@ -216,7 +216,7 @@ class NMFWithMeta(NMFModel):
                  )
         return hist
     
-    def predict(self, model_name, user_test_input, item_test_input):
+    def predict(self, model_name, user_test_input, item_test_input, genre_test_input):
         assert model_name in ['gmf', 'mlp', 'nmf'], 'model name parameter must be gmf, mlp, nmf'
 
         if model_name =='gmf':
@@ -226,7 +226,7 @@ class NMFWithMeta(NMFModel):
         else: # model_name='nmf'
             model=self.nmf_model
         
-        pred_result = model.predict([np.array(user_test_input), np.array(item_test_input)]).flatten()
+        pred_result = model.predict([np.array(user_test_input), np.array(item_test_input), np.array(genre_test_input)]).flatten()
         return pred_result
     
     def __init__(self, user_train_input, item_train_input, genre_train_input, train_labels, num_users, num_items, num_genres, num_factors=16, num_movie_factors=8):
