@@ -160,7 +160,7 @@ class NMFModel(object):
         model=Model([user_input_layer, item_input_layer], prediction)
         
         self.nmf_model=model
-        self.nmf_model=set_nmf_weight(self)
+        self.nmf_model=self.set_nmf_weight()
         
         return self.nmf_model
     
