@@ -33,7 +33,7 @@ class NMFWithMeta(NMFModel):
                                name='genre_embedding'
                               )(genre_input_layer)
 
-        genre_emb_mean=tf.reduce_mean(genre_embedding_layer, 0)
+        genre_emb_mean=tf.reduce_mean(genre_embedding_layer, 1)
 
         
         user_latent=layers.Flatten()(user_embedding_layer)
@@ -79,7 +79,7 @@ class NMFWithMeta(NMFModel):
                                name='genre_embedding'
                               )(genre_input_layer)
 
-        genre_emb_mean=tf.reduce_mean(genre_embedding_layer, 0)
+        genre_emb_mean=tf.reduce_mean(genre_embedding_layer, 1)
 
         
         user_latent=layers.Flatten()(user_embedding_layer)
@@ -133,7 +133,7 @@ class NMFWithMeta(NMFModel):
                                name='GMF_genre_embedding'
                               )(genre_input_layer)
         
-        GMF_genre_emb_mean=tf.reduce_mean(GMF_genre_embedding, 0)
+        GMF_genre_emb_mean=tf.reduce_mean(GMF_genre_embedding, 1)
         
         # MLP embedding layer
         MLP_user_embedding=layers.Embedding(input_dim=num_users, 
@@ -153,7 +153,7 @@ class NMFWithMeta(NMFModel):
                                embeddings_regularizer=regularizers.l2(0.),
                                name='MLP_genre_embedding'
                               )(genre_input_layer)
-        MLP_genre_emb_mean=tf.reduce_mean(MLP_genre_embedding, 0)
+        MLP_genre_emb_mean=tf.reduce_mean(MLP_genre_embedding, 1)
 
         # GMF
         GMF_user_latent=layers.Flatten()(GMF_user_embedding)
